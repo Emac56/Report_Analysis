@@ -165,9 +165,11 @@
             </select>
             <div class="filter-date-group">
                 <i class="fas fa-calendar-alt date-icon"></i>
-                <input type="date" id="dateFrom" class="filter-date" value="<%= dateFrom %>">
+
+                <input type="date" id="dateFrom" class="filter-date" value="<%= typeof dateFrom !== 'undefined' ? dateFrom : '' %>">
                 <span class="date-sep">to</span>
-                <input type="date" id="dateTo" class="filter-date" value="<%= dateTo %>">
+                <input type="date" id="dateTo" class="filter-date" value="<%= typeof dateTo !== 'undefined' ? dateTo : '' %>">
+
             </div>
             <button class="btn-apply" onclick="applyFilters()"><i class="fas fa-check"></i> Apply</button>
             <button class="btn-report" onclick="generateReport()" title="Generate detailed printable report"><i class="fas fa-file-alt"></i> Report</button>
@@ -177,7 +179,7 @@
             </span>
         </div>
 
-        <% if (selectedOffice !== 'all' || dateFrom || dateTo) { %>
+        <% if ((typeof selectedOffice !== 'undefined' && selectedOffice !== 'all') || (typeof dateFrom !== 'undefined' && dateFrom) || (typeof dateTo !== 'undefined' && dateTo)) { %>
         <div class="active-filter-banner">
             <i class="fas fa-filter-circle-xmark banner-icon" style="font-size:1rem;"></i>
             <div>
