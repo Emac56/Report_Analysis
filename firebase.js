@@ -48,20 +48,38 @@ const mockDb = {
     })
 };
 
-try {
-    const serviceAccount = require('./serviceAccountKey.json');
-    const app = admin.initializeApp({
-        credential: admin.cert(serviceAccount)
-    });
-    const realDb = getFirestore(app);
-    activeDb = realDb;
-    useFirebase = true;
-    console.log('✅ Firebase initialized successfully.');
-} catch (error) {
-    console.log('⚠️  Firebase init failed. Using in-memory mock database.');
-    console.log('   Error:', error.message);
-    activeDb = mockDb;
-    useFirebase = false;
+let serviceAccount;
+const envServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+if (envServiceAccount) {
+    try {
+        serviceAccount = JSON.parse(envServiceAccount);
+    } catch (e) {
+        console.log('⚠️  Failed to parse FIREBASE_SERVICE_ACCOUNT env var:', e.message);
+    }
+}
+if (!serviceAccount) {
+    try {
+        serviceAccount = require('./serviceAccountKey.json');
+    } catch (e) {
+        console.log('⚠️  No service account file found (serviceAccountKey.json).');
+    }
+}
+
+if (serviceAccount) {
+    try {
+        const app = admin.initializeApp({
+            credential: admin.cert(serviceAccount)
+        });
+        const realDb = getFirestore(app);
+        activeDb = realDb;
+        useFirebase = true;
+        console.log('✅ Firebase initialized successfully.');
+    } catch (error) {
+        console.log('⚠️  Firebase init failed. Using in-memory mock database.');
+        console.log('   Error:', error.message);
+        activeDb = mockDb;
+        useFirebase = false;
+    }
 }
 
 // Wrapper to handle runtime Firestore errors (like disabled API or permission denied)
