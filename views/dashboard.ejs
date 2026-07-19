@@ -1,0 +1,901 @@
+<%- include('partials/header', { pageTitle: 'Dashboard - PSAU Feedback Analytics', useCharts: true }) %>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: text-bottom;
+    border: 3px solid rgba(27, 94, 32, 0.1);
+    border-top-color: var(--psau-green);
+    border-radius: 50%;
+    animation: spin .75s linear infinite;
+}
+.btn-refresh-ai-inline:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--psau-green) !important;
+}
+</style>
+
+<div class="dashboard-page">
+    <nav class="dash-nav">
+        <a href="/admin/dashboard" class="brand">
+            <span>PSAU Feedback Analytics</span>
+        </a>
+        <div class="nav-actions">
+            <span class="admin-label"><i class="fas fa-user-shield"></i> Admin</span>
+            <a href="/admin/dashboard" class="btn-nav-refresh" title="Refresh data"><i class="fas fa-sync-alt"></i></a>
+            <a href="/admin/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </nav>
+
+    <div class="dash-content">
+        <div class="dash-header">
+            <div class="dash-header-left">
+                <h1><i class="fas fa-chart-bar" style="color:var(--psau-green);"></i> Feedback Analytics Dashboard</h1>
+                <p>AI-powered analysis of customer feedback responses</p>
+            </div>
+            <div class="dash-header-right">
+                <span class="dash-date-badge"><i class="fas fa-calendar-alt"></i> <%= new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+            </div>
+        </div>
+
+        <!-- Office & Date Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-bar-label">
+                <i class="fas fa-filter"></i>
+                <span>Filter by:</span>
+            </div>
+            <select id="officeFilter" class="filter-select" onchange="applyFilters()">
+                <option value="all" <%= selectedOffice === 'all' ? 'selected' : '' %>>All Offices / Departments (Overall)</option>
+                <optgroup label="President Cluster">
+                    <option value="Office of the President" <%= selectedOffice === 'Office of the President' ? 'selected' : '' %>>Office of the President (OPR)</option>
+                    <option value="Internal Audit Unit" <%= selectedOffice === 'Internal Audit Unit' ? 'selected' : '' %>>Internal Audit Unit (IAU)</option>
+                    <option value="Legal Unit" <%= selectedOffice === 'Legal Unit' ? 'selected' : '' %>>Legal Unit (LEU)</option>
+                    <option value="Security Unit" <%= selectedOffice === 'Security Unit' ? 'selected' : '' %>>Security Unit (SEU)</option>
+                    <option value="Office of the Board Secretary" <%= selectedOffice === 'Office of the Board Secretary' ? 'selected' : '' %>>Office of the Board Secretary (OBS)</option>
+                    <option value="Office of Gender and Development" <%= selectedOffice === 'Office of Gender and Development' ? 'selected' : '' %>>Office of Gender and Development (OGD)</option>
+                    <option value="Office of Institutional Quality Assurance" <%= selectedOffice === 'Office of Institutional Quality Assurance' ? 'selected' : '' %>>Office of Institutional Quality Assurance (OQA)</option>
+                    <option value="Government-Initiated Accreditation and International Assessments Unit" <%= selectedOffice === 'Government-Initiated Accreditation and International Assessments Unit' ? 'selected' : '' %>>Government-Initiated Accreditation and International Assessments Unit (GIU)</option>
+                    <option value="Institutional and Program Accreditation Unit" <%= selectedOffice === 'Institutional and Program Accreditation Unit' ? 'selected' : '' %>>Institutional and Program Accreditation Unit (IPU)</option>
+                    <option value="Monitoring and Quality Analytics Unit" <%= selectedOffice === 'Monitoring and Quality Analytics Unit' ? 'selected' : '' %>>Monitoring and Quality Analytics Unit (MQU)</option>
+                    <option value="Quality Management System Unit" <%= selectedOffice === 'Quality Management System Unit' ? 'selected' : '' %>>Quality Management System Unit (QMS)</option>
+                    <option value="Office of Public Affairs and International Linkages" <%= selectedOffice === 'Office of Public Affairs and International Linkages' ? 'selected' : '' %>>Office of Public Affairs and International Linkages (OPI)</option>
+                    <option value="External Affairs Unit" <%= selectedOffice === 'External Affairs Unit' ? 'selected' : '' %>>External Affairs Unit (EAU)</option>
+                    <option value="Information Unit" <%= selectedOffice === 'Information Unit' ? 'selected' : '' %>>Information Unit (IFU)</option>
+                    <option value="International Affairs Unit" <%= selectedOffice === 'International Affairs Unit' ? 'selected' : '' %>>International Affairs Unit (INU)</option>
+                    <option value="Strategic Communication Unit" <%= selectedOffice === 'Strategic Communication Unit' ? 'selected' : '' %>>Strategic Communication Unit (SCU)</option>
+                    <option value="Bids and Awards Committee" <%= selectedOffice === 'Bids and Awards Committee' ? 'selected' : '' %>>Bids and Awards Committee (BAC)</option>
+                </optgroup>
+                <optgroup label="Academic Affairs Cluster">
+                    <option value="Office of the Vice President for Academic Affairs" <%= selectedOffice === 'Office of the Vice President for Academic Affairs' ? 'selected' : '' %>>Office of the Vice President for Academic Affairs (VAA)</option>
+                    <option value="College of Agriculture Systems and Technology" <%= selectedOffice === 'College of Agriculture Systems and Technology' ? 'selected' : '' %>>College of Agriculture Systems and Technology (CAT)</option>
+                    <option value="Department of Animal Science" <%= selectedOffice === 'Department of Animal Science' ? 'selected' : '' %>>Department of Animal Science (DAS)</option>
+                    <option value="Department of Crop Science" <%= selectedOffice === 'Department of Crop Science' ? 'selected' : '' %>>Department of Crop Science (DCR)</option>
+                    <option value="Department of Fisheries" <%= selectedOffice === 'Department of Fisheries' ? 'selected' : '' %>>Department of Fisheries (DOF)</option>
+                    <option value="Department of Food Technology" <%= selectedOffice === 'Department of Food Technology' ? 'selected' : '' %>>Department of Food Technology (DFT)</option>
+                    <option value="College of Forestry and Agroforestry" <%= selectedOffice === 'College of Forestry and Agroforestry' ? 'selected' : '' %>>College of Forestry and Agroforestry (CFA)</option>
+                    <option value="Department of Agroforestry" <%= selectedOffice === 'Department of Agroforestry' ? 'selected' : '' %>>Department of Agroforestry (DAF)</option>
+                    <option value="Department of Forestry" <%= selectedOffice === 'Department of Forestry' ? 'selected' : '' %>>Department of Forestry (DFR)</option>
+                    <option value="College of Arts and Sciences" <%= selectedOffice === 'College of Arts and Sciences' ? 'selected' : '' %>>College of Arts and Sciences (CAS)</option>
+                    <option value="Department of Biology" <%= selectedOffice === 'Department of Biology' ? 'selected' : '' %>>Department of Biology (DOB)</option>
+                    <option value="Department of Development Communication" <%= selectedOffice === 'Department of Development Communication' ? 'selected' : '' %>>Department of Development Communication (DDC)</option>
+                    <option value="Department of English" <%= selectedOffice === 'Department of English' ? 'selected' : '' %>>Department of English (DOE)</option>
+                    <option value="Department of Mathematics" <%= selectedOffice === 'Department of Mathematics' ? 'selected' : '' %>>Department of Mathematics (DOM)</option>
+                    <option value="Department of Social Sciences" <%= selectedOffice === 'Department of Social Sciences' ? 'selected' : '' %>>Department of Social Sciences (DSS)</option>
+                    <option value="College of Education" <%= selectedOffice === 'College of Education' ? 'selected' : '' %>>College of Education (COE)</option>
+                    <option value="Department of Elementary Education" <%= selectedOffice === 'Department of Elementary Education' ? 'selected' : '' %>>Department of Elementary Education (DEE)</option>
+                    <option value="Department of Physical Education" <%= selectedOffice === 'Department of Physical Education' ? 'selected' : '' %>>Department of Physical Education (DPE)</option>
+                    <option value="Department of Professional and General Education" <%= selectedOffice === 'Department of Professional and General Education' ? 'selected' : '' %>>Department of Professional and General Education (DPG)</option>
+                    <option value="Department of Secondary Education" <%= selectedOffice === 'Department of Secondary Education' ? 'selected' : '' %>>Department of Secondary Education (DSE)</option>
+                    <option value="Department of Technology and Livelihood Education" <%= selectedOffice === 'Department of Technology and Livelihood Education' ? 'selected' : '' %>>Department of Technology and Livelihood Education (DTL)</option>
+                    <option value="College of Engineering and Computer Studies" <%= selectedOffice === 'College of Engineering and Computer Studies' ? 'selected' : '' %>>College of Engineering and Computer Studies (CEC)</option>
+                    <option value="Department of Agricultural and Biosystems Engineering" <%= selectedOffice === 'Department of Agricultural and Biosystems Engineering' ? 'selected' : '' %>>Department of Agricultural and Biosystems Engineering (DAB)</option>
+                    <option value="Department of Civil Engineering" <%= selectedOffice === 'Department of Civil Engineering' ? 'selected' : '' %>>Department of Civil Engineering (DCI)</option>
+                    <option value="Department of Computer Engineering" <%= selectedOffice === 'Department of Computer Engineering' ? 'selected' : '' %>>Department of Computer Engineering (DCP)</option>
+                    <option value="Department of Computer Studies" <%= selectedOffice === 'Department of Computer Studies' ? 'selected' : '' %>>Department of Computer Studies (DCS)</option>
+                    <option value="Department of Geodetic Engineering" <%= selectedOffice === 'Department of Geodetic Engineering' ? 'selected' : '' %>>Department of Geodetic Engineering (DGE)</option>
+                    <option value="College of Business, Economics and Entrepreneurship" <%= selectedOffice === 'College of Business, Economics and Entrepreneurship' ? 'selected' : '' %>>College of Business, Economics and Entrepreneurship (CBE)</option>
+                    <option value="Department of Agricultural Business" <%= selectedOffice === 'Department of Agricultural Business' ? 'selected' : '' %>>Department of Agricultural Business (DAG)</option>
+                    <option value="Department of Agricultural Economics" <%= selectedOffice === 'Department of Agricultural Economics' ? 'selected' : '' %>>Department of Agricultural Economics (DAE)</option>
+                    <option value="Department of Entrepreneurship" <%= selectedOffice === 'Department of Entrepreneurship' ? 'selected' : '' %>>Department of Entrepreneurship (DEN)</option>
+                    <option value="Department of Hospitality Management" <%= selectedOffice === 'Department of Hospitality Management' ? 'selected' : '' %>>Department of Hospitality Management (DHM)</option>
+                    <option value="College of Veterinary Medicine" <%= selectedOffice === 'College of Veterinary Medicine' ? 'selected' : '' %>>College of Veterinary Medicine (CVM)</option>
+                    <option value="Department of Veterinary Basic Sciences" <%= selectedOffice === 'Department of Veterinary Basic Sciences' ? 'selected' : '' %>>Department of Veterinary Basic Sciences (DVB)</option>
+                    <option value="Graduate School" <%= selectedOffice === 'Graduate School' ? 'selected' : '' %>>Graduate School (GRS)</option>
+                    <option value="Office of Admissions and Registration" <%= selectedOffice === 'Office of Admissions and Registration' ? 'selected' : '' %>>Office of Admissions and Registration (OAR)</option>
+                    <option value="Registration Unit" <%= selectedOffice === 'Registration Unit' ? 'selected' : '' %>>Registration Unit (RGU)</option>
+                    <option value="Office of Alumni Relations and Placement" <%= selectedOffice === 'Office of Alumni Relations and Placement' ? 'selected' : '' %>>Office of Alumni Relations and Placement (OAP)</option>
+                    <option value="Office of Cultural and Performing Arts" <%= selectedOffice === 'Office of Cultural and Performing Arts' ? 'selected' : '' %>>Office of Cultural and Performing Arts (OCP)</option>
+                    <option value="Office of Guidance and Testing" <%= selectedOffice === 'Office of Guidance and Testing' ? 'selected' : '' %>>Office of Guidance and Testing (OGT)</option>
+                    <option value="Office of Library Services and Museum" <%= selectedOffice === 'Office of Library Services and Museum' ? 'selected' : '' %>>Office of Library Services and Museum (OLM)</option>
+                    <option value="Office of Sports Development" <%= selectedOffice === 'Office of Sports Development' ? 'selected' : '' %>>Office of Sports Development (OSD)</option>
+                    <option value="Office of Student Affairs and Services" <%= selectedOffice === 'Office of Student Affairs and Services' ? 'selected' : '' %>>Office of Student Affairs and Services (OSS)</option>
+                    <option value="National Service Training Program Unit" <%= selectedOffice === 'National Service Training Program Unit' ? 'selected' : '' %>>National Service Training Program Unit (NSU)</option>
+                    <option value="Special Academic Programs and Services Unit" <%= selectedOffice === 'Special Academic Programs and Services Unit' ? 'selected' : '' %>>Special Academic Programs and Services Unit (SAU)</option>
+                </optgroup>
+                <optgroup label="Administration and Finance Cluster">
+                    <option value="Office of the Vice President for Administration and Finance" <%= selectedOffice === 'Office of the Vice President for Administration and Finance' ? 'selected' : '' %>>Office of the Vice President for Administration and Finance (VAF)</option>
+                    <option value="Office of Administrative Services" <%= selectedOffice === 'Office of Administrative Services' ? 'selected' : '' %>>Office of Administrative Services (OAS)</option>
+                    <option value="Cash Unit" <%= selectedOffice === 'Cash Unit' ? 'selected' : '' %>>Cash Unit (CSU)</option>
+                    <option value="Human Resource Management Unit" <%= selectedOffice === 'Human Resource Management Unit' ? 'selected' : '' %>>Human Resource Management Unit (HRU)</option>
+                    <option value="Procurement Unit" <%= selectedOffice === 'Procurement Unit' ? 'selected' : '' %>>Procurement Unit (PRU)</option>
+                    <option value="Records Unit" <%= selectedOffice === 'Records Unit' ? 'selected' : '' %>>Records Unit (RCU)</option>
+                    <option value="Supply and Property Management Unit" <%= selectedOffice === 'Supply and Property Management Unit' ? 'selected' : '' %>>Supply and Property Management Unit (SPU)</option>
+                    <option value="Office of Financial Services" <%= selectedOffice === 'Office of Financial Services' ? 'selected' : '' %>>Office of Financial Services (OFS)</option>
+                    <option value="Accounting Unit" <%= selectedOffice === 'Accounting Unit' ? 'selected' : '' %>>Accounting Unit (ACU)</option>
+                    <option value="Budget Unit" <%= selectedOffice === 'Budget Unit' ? 'selected' : '' %>>Budget Unit (BDU)</option>
+                    <option value="Office of General and Auxiliary Services" <%= selectedOffice === 'Office of General and Auxiliary Services' ? 'selected' : '' %>>Office of General and Auxiliary Services (OGA)</option>
+                    <option value="Faculty, Staff and Student Housing Unit" <%= selectedOffice === 'Faculty, Staff and Student Housing Unit' ? 'selected' : '' %>>Faculty, Staff and Student Housing Unit (FSU)</option>
+                    <option value="Ground and Physical Plant Improvement Unit" <%= selectedOffice === 'Ground and Physical Plant Improvement Unit' ? 'selected' : '' %>>Ground and Physical Plant Improvement Unit (GPU)</option>
+                    <option value="Health Unit" <%= selectedOffice === 'Health Unit' ? 'selected' : '' %>>Health Unit (HEU)</option>
+                    <option value="Motorpool and Agri-Machinery Unit" <%= selectedOffice === 'Motorpool and Agri-Machinery Unit' ? 'selected' : '' %>>Motorpool and Agri-Machinery Unit (MAU)</option>
+                </optgroup>
+                <optgroup label="Research, Innovation, Extension and Training Cluster">
+                    <option value="Office of the Vice President for Research, Innovation, Extension and Training" <%= selectedOffice === 'Office of the Vice President for Research, Innovation, Extension and Training' ? 'selected' : '' %>>Office of the VP for Research, Innovation, Extension and Training (VRE)</option>
+                    <option value="Office of Extension and Training" <%= selectedOffice === 'Office of Extension and Training' ? 'selected' : '' %>>Office of Extension and Training (OET)</option>
+                    <option value="Community Radio Station" <%= selectedOffice === 'Community Radio Station' ? 'selected' : '' %>>Community Radio Station (CRS)</option>
+                    <option value="Satellite Cattle Breeding Center" <%= selectedOffice === 'Satellite Cattle Breeding Center' ? 'selected' : '' %>>Satellite Cattle Breeding Center (SCC)</option>
+                    <option value="Technical Vocational Education and Training Center" <%= selectedOffice === 'Technical Vocational Education and Training Center' ? 'selected' : '' %>>Technical Vocational Education and Training Center (TVC)</option>
+                    <option value="Office of Innovation" <%= selectedOffice === 'Office of Innovation' ? 'selected' : '' %>>Office of Innovation (OOI)</option>
+                    <option value="Intellectual Property and Technology Business Management Unit" <%= selectedOffice === 'Intellectual Property and Technology Business Management Unit' ? 'selected' : '' %>>Intellectual Property and Technology Business Management Unit (ITU)</option>
+                    <option value="Technology Business Incubation Unit" <%= selectedOffice === 'Technology Business Incubation Unit' ? 'selected' : '' %>>Technology Business Incubation Unit (TBU)</option>
+                    <option value="Office of Research and Development" <%= selectedOffice === 'Office of Research and Development' ? 'selected' : '' %>>Office of Research and Development (ORD)</option>
+                    <option value="Alternative Low-Input Agricultural System RDE Center" <%= selectedOffice === 'Alternative Low-Input Agricultural System RDE Center' ? 'selected' : '' %>>Alternative Low-Input Agricultural System RDE Center (ARC)</option>
+                    <option value="Bamboo & Rattan RDE Center" <%= selectedOffice === 'Bamboo & Rattan RDE Center' ? 'selected' : '' %>>Bamboo & Rattan RDE Center (BRC)</option>
+                    <option value="Tamarind RDE Center" <%= selectedOffice === 'Tamarind RDE Center' ? 'selected' : '' %>>Tamarind RDE Center (TRC)</option>
+                </optgroup>
+                <optgroup label="Planning and Resource Generation Cluster">
+                    <option value="Office of the Vice President for Planning and Resource Generation" <%= selectedOffice === 'Office of the Vice President for Planning and Resource Generation' ? 'selected' : '' %>>Office of the VP for Planning and Resource Generation (VPR)</option>
+                    <option value="Office of Business Affairs" <%= selectedOffice === 'Office of Business Affairs' ? 'selected' : '' %>>Office of Business Affairs (OBA)</option>
+                    <option value="Agribusiness Unit" <%= selectedOffice === 'Agribusiness Unit' ? 'selected' : '' %>>Agribusiness Unit (ABU)</option>
+                    <option value="Non-Agribusiness Unit" <%= selectedOffice === 'Non-Agribusiness Unit' ? 'selected' : '' %>>Non-Agribusiness Unit (NAU)</option>
+                    <option value="Marketing Unit" <%= selectedOffice === 'Marketing Unit' ? 'selected' : '' %>>Marketing Unit (MRU)</option>
+                    <option value="Office of Planning, Project Development and Monitoring" <%= selectedOffice === 'Office of Planning, Project Development and Monitoring' ? 'selected' : '' %>>Office of Planning, Project Development and Monitoring (OPP)</option>
+                    <option value="Disaster Risk Reduction and Management Unit" <%= selectedOffice === 'Disaster Risk Reduction and Management Unit' ? 'selected' : '' %>>Disaster Risk Reduction and Management Unit (DRU)</option>
+                    <option value="Land and Agroecological Resource Management Unit" <%= selectedOffice === 'Land and Agroecological Resource Management Unit' ? 'selected' : '' %>>Land and Agroecological Resource Management Unit (LAU)</option>
+                    <option value="Management Information System Unit" <%= selectedOffice === 'Management Information System Unit' ? 'selected' : '' %>>Management Information System Unit (MIU)</option>
+                    <option value="Planning Unit" <%= selectedOffice === 'Planning Unit' ? 'selected' : '' %>>Planning Unit (PLU)</option>
+                    <option value="Project Development, Management and Monitoring Unit" <%= selectedOffice === 'Project Development, Management and Monitoring Unit' ? 'selected' : '' %>>Project Development, Management and Monitoring Unit (PMU)</option>
+                </optgroup>
+            </select>
+            <div class="filter-date-group">
+                <i class="fas fa-calendar-alt date-icon"></i>
+                <input type="date" id="dateFrom" class="filter-date" value="<%= dateFrom %>">
+                <span class="date-sep">to</span>
+                <input type="date" id="dateTo" class="filter-date" value="<%= dateTo %>">
+            </div>
+            <button class="btn-apply" onclick="applyFilters()"><i class="fas fa-check"></i> Apply</button>
+            <button class="btn-report" onclick="generateReport()" title="Generate detailed printable report"><i class="fas fa-file-alt"></i> Report</button>
+            <span class="filter-count">
+                <i class="fas fa-info-circle"></i>
+                <strong><%= feedbacks.length %></strong> / <strong><%= allFeedbacks.length %></strong>
+            </span>
+        </div>
+
+        <% if (selectedOffice !== 'all' || dateFrom || dateTo) { %>
+        <div class="active-filter-banner">
+            <i class="fas fa-filter-circle-xmark banner-icon" style="font-size:1rem;"></i>
+            <div>
+                <% if (selectedOffice !== 'all') { %><span class="banner-info"><%= selectedOffice %></span><% } %>
+                <% if (dateFrom) { %><span class="banner-sub">From: <%= dateFrom %></span><% } %>
+                <% if (dateTo) { %><span class="banner-sub">To: <%= dateTo %></span><% } %>
+                <% if (selectedOffice === 'all' && !dateFrom && !dateTo) { %>
+                <span class="banner-info">All Offices</span>
+                <% } %>
+            </div>
+            <a href="/admin/dashboard" class="clear-filter"><i class="fas fa-times"></i> Clear All Filters</a>
+        </div>
+        <% } %>
+
+        <% if (selectedOffice !== 'all') { %>
+            <!-- Department Profile & Comparative Insights -->
+            <div class="ai-section" style="margin-top: 1rem; margin-bottom: 2.2rem;">
+                <div class="ai-card" style="border-left: 4px solid var(--psau-green); background: linear-gradient(135deg, #ffffff 0%, #f7fbf7 100%);">
+                    <div class="ai-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.15rem; font-weight: 800;"><i class="fas fa-building" style="color: var(--psau-green); margin-right: 0.35rem;"></i> <%= selectedOffice %> — Office Profile Summary</h3>
+                        <span class="badge positive" style="padding: 0.35rem 0.85rem; background: rgba(27,94,32,0.12); color: var(--psau-green); border: 1px solid rgba(27,94,32,0.2);"><i class="fas fa-users"></i> <%= feedbacks.length %> Respondents</span>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 0.75rem;">
+                        <div>
+                            <h4 style="font-size: 0.82rem; text-transform: uppercase; color: var(--psau-green); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 800; letter-spacing: 0.5px;"><i class="fas fa-chevron-up"></i> Top Performance Strengths</h4>
+                            <% 
+                                const sqdLabels = [
+                                    'SQD0 - General Satisfaction',
+                                    'SQD1 - Speed & Waiting Time',
+                                    'SQD2 - Requirements Compliance',
+                                    'SQD3 - Ease of Steps & Payment',
+                                    'SQD4 - Location & Access',
+                                    'SQD5 - Fair & Reasonable Fees',
+                                    'SQD6 - Equality & Fair Treatment',
+                                    'SQD7 - Staff Courtesy & Support',
+                                    'SQD8 - Transaction Outcome'
+                                ];
+                                let sqdWithScores = chartData.sqdAverages.map((score, idx) => ({ label: sqdLabels[idx], score }));
+                                let strengths = [...sqdWithScores].sort((a,b) => b.score - a.score).filter(item => item.score > 0).slice(0, 2);
+                                let weaknesses = [...sqdWithScores].sort((a,b) => a.score - b.score).filter(item => item.score > 0).slice(0, 2);
+                            %>
+                            <% if (strengths.length > 0) { %>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <% strengths.forEach(item => { %>
+                                        <li style="margin-bottom: 0.6rem; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.7); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                                            <span style="color: var(--text-secondary); font-weight: 500;"><%= item.label %></span>
+                                            <strong style="color: #2e7d32; font-weight: 800; background: rgba(76,175,80,0.1); padding: 0.15rem 0.45rem; border-radius: 4px;"><%= item.score.toFixed(2) %>/5.00</strong>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            <% } else { %>
+                                <p style="font-size:0.8rem; color:#9ea4b8; font-style:italic;">No rating data available for analysis.</p>
+                            <% } %>
+                        </div>
+                        
+                        <div>
+                            <h4 style="font-size: 0.82rem; text-transform: uppercase; color: #d32f2f; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 800; letter-spacing: 0.5px;"><i class="fas fa-chevron-down"></i> Areas Requesting Improvement</h4>
+                            <% if (weaknesses.length > 0) { %>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <% weaknesses.forEach(item => { %>
+                                        <li style="margin-bottom: 0.6rem; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.7); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                                            <span style="color: var(--text-secondary); font-weight: 500;"><%= item.label %></span>
+                                            <strong style="color: #c62828; font-weight: 800; background: rgba(244,67,54,0.08); padding: 0.15rem 0.45rem; border-radius: 4px;"><%= item.score.toFixed(2) %>/5.00</strong>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            <% } else { %>
+                                <p style="font-size:0.8rem; color:#9ea4b8; font-style:italic;">No rating data available for analysis.</p>
+                            <% } %>
+                        </div>
+                        
+                        <div style="border-left: 1px solid var(--border-color); padding-left: 1.5rem;">
+                            <h4 style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem; font-weight: 800; letter-spacing: 0.5px;"><i class="fas fa-project-diagram" style="color: #42a5f5;"></i> Comparative Cluster Rank</h4>
+                            <% 
+                                const deptCluster = clusteredDepartments.find(d => d.name === selectedOffice);
+                            %>
+                            <% if (deptCluster) { %>
+                                <div style="margin-bottom: 0.6rem; font-size: 0.85rem;">
+                                    K-Means Status: 
+                                    <% if (deptCluster.cluster.includes('Outstanding') || deptCluster.cluster.includes('Excellent')) { %>
+                                        <span class="badge positive" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;"><%= deptCluster.cluster %></span>
+                                    <% } else if (deptCluster.cluster.includes('Needs Attention') || deptCluster.cluster.includes('Improvement')) { %>
+                                        <span class="badge negative" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;"><%= deptCluster.cluster %></span>
+                                    <% } else { %>
+                                        <span class="badge mixed" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;"><%= deptCluster.cluster %></span>
+                                    <% } %>
+                                </div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; background: rgba(0,0,0,0.02); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px dashed var(--border-color);">
+                                    Comparative standing: <strong>Rank #<%= clusteredDepartments.findIndex(d => d.name === selectedOffice) + 1 %></strong> out of <strong><%= clusteredDepartments.length %></strong> rated offices university-wide.
+                                </div>
+                            <% } else { %>
+                                <p style="font-size:0.8rem; color:#9ea4b8; font-style:italic;">No cluster position assigned yet.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="stat-value"><%= stats.totalResponses %></div>
+                <div class="stat-label">Total Responses</div>
+            </div>
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fas fa-star"></i></div>
+                <div class="stat-value"><%= stats.avgSQD %></div>
+                <div class="stat-label">Average SQD Rating</div>
+            </div>
+            <div class="stat-card gold">
+                <div class="stat-icon"><i class="fas fa-smile"></i></div>
+                <div class="stat-value"><%= stats.positivePct %>%</div>
+                <div class="stat-label">Positive Sentiment</div>
+            </div>
+            <div class="stat-card pink">
+                <div class="stat-icon"><i class="fas fa-comment-dots"></i></div>
+                <div class="stat-value"><%= stats.totalSuggestions %></div>
+                <div class="stat-label">Suggestions Received</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-bar"></i> SQD Average Ratings (SQD0 - SQD8)</h3>
+                <canvas id="sqdChart" height="280"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-pie"></i> Sentiment Distribution</h3>
+                <canvas id="sentimentChart" height="280"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-pie"></i> CC1 — Citizen's Charter Awareness</h3>
+                <canvas id="ccChart" height="280"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-venus-mars"></i> Gender Distribution</h3>
+                <canvas id="genderChart" height="280"></canvas>
+            </div>
+        </div>        <!-- AI Analysis -->
+        <div class="ai-section" style="margin-top: 2rem;">
+            <div class="ai-card" style="border-left: 4px solid var(--psau-green);">
+                <div class="ai-header">
+                    <h3><i class="fas fa-robot"></i> AI-Powered Feedback Analysis Report</h3>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <% if (selectedOffice !== 'all') { %>
+                        <span class="ai-badge office-badge"><%= selectedOffice %></span>
+                        <% } else { %>
+                        <span class="ai-badge univ-badge">UNIVERSITY-WIDE</span>
+                        <% } %>
+                        <span class="ai-label"><i class="fas fa-brain"></i> Pollinations AI</span>
+                        <button id="btnPrintAI" class="btn-refresh-ai-inline" onclick="printAIReport()" title="Print or Save AI Analysis as PDF" style="background: var(--accent-blue); border: 1px solid var(--accent-blue); color: white; padding: 0.38rem 0.75rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: <%= aiAnalysis ? 'flex' : 'none' %>; align-items: center; gap: 0.35rem; transition: 0.2s;">
+                            <i class="fas fa-file-pdf"></i> Save as PDF
+                        </button>
+                        <button id="btnRefreshAI" class="btn-refresh-ai-inline" onclick="triggerAIAnalysis(true)" title="Re-generate analysis using Pollinations AI" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.38rem 0.75rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: <%= aiAnalysis ? 'flex' : 'none' %>; align-items: center; gap: 0.35rem; transition: 0.2s;">
+                            <i class="fas fa-redo"></i> Re-generate
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="aiAnalysisContainer">
+                    <% if (aiAnalysis) { %>
+                        <div class="ai-analysis-content"><%- aiAnalysis %></div>
+                    <% } else { %>
+                        <div class="ai-empty-state" style="text-align: center; padding: 2.5rem 1rem;">
+                            <i class="fas fa-brain" style="font-size: 2.8rem; color: var(--psau-green); opacity: 0.85; margin-bottom: 1.25rem; display: block;"></i>
+                            <h4 style="color: var(--text-primary); margin-bottom: 0.6rem; font-weight: 700;">AI Feedback Analysis Report</h4>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                                Generate an automated quality report summarizing strengths, areas for improvement, sentiment trends, and specific action plans for the university.
+                            </p>
+                            <button id="btnGenerateAI" class="btn-submit" onclick="triggerAIAnalysis(false)" style="margin: 0 auto; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.35rem;">
+                                <i class="fas fa-magic"></i> Generate AI Analysis
+                            </button>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <!-- K-Means Machine Learning Clustering Analysis -->
+        <div class="ai-section" style="margin-top: 2rem;">
+            <div class="ai-card" style="border-left: 4px solid #42a5f5;">
+                <div class="ai-header">
+                    <h3><i class="fas fa-project-diagram"></i> Machine Learning: K-Means Rating Pattern Clustering</h3>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span class="ai-badge" style="background:rgba(66,165,245,0.15); color:#42a5f5; border: 1px solid rgba(66,165,245,0.3);">K-Means (k=3)</span>
+                        <span class="ai-label"><i class="fas fa-cogs"></i> Pattern Analysis</span>
+                    </div>
+                </div>
+                
+                <p style="margin-bottom:1.5rem; color:#9ea4b8; font-size:0.9rem; line-height:1.5;">
+                    This machine learning component groups the university departments/offices into clusters based on their rating patterns across all 9 Service Quality Dimensions (SQD). This identifies performance segments (Outstanding, Satisfactory, and Needs Attention) dynamically.
+                </p>
+
+                <% if (clusteredDepartments && clusteredDepartments.length > 0) { %>
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" style="margin-top: 0.5rem;">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Department / Office</th>
+                                    <th>Avg SQD Rating</th>
+                                    <th>K-Means Assigned Cluster Segment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% clusteredDepartments.forEach(function(dept, index) { %>
+                                    <tr>
+                                        <td><%= index + 1 %></td>
+                                        <td style="font-weight: 500;"><%= dept.name %></td>
+                                        <td>
+                                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                                <div style="width: 80px; background: rgba(255,255,255,0.05); height: 8px; border-radius: 4px; overflow: hidden;">
+                                                    <div style="width: <%= (parseFloat(dept.avgScore) / 5) * 100 %>%; background: #2e7d32; height: 100%;"></div>
+                                                </div>
+                                                <span><%= dept.avgScore %>/5.00</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <% if (dept.cluster.includes('Outstanding') || dept.cluster.includes('Excellent')) { %>
+                                                <span class="badge positive" style="background: rgba(76, 175, 80, 0.15); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.3); padding: 0.35rem 0.75rem;"><%= dept.cluster %></span>
+                                            <% } else if (dept.cluster.includes('Needs Attention') || dept.cluster.includes('Improvement')) { %>
+                                                <span class="badge negative" style="background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); padding: 0.35rem 0.75rem;"><%= dept.cluster %></span>
+                                            <% } else { %>
+                                                <span class="badge mixed" style="background: rgba(255, 152, 0, 0.15); color: #ff9800; border: 1px solid rgba(255, 152, 0, 0.3); padding: 0.35rem 0.75rem;"><%= dept.cluster %></span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="ai-empty-state">
+                        <i class="fas fa-network-wired"></i>
+                        <p>No clustering data available.</p>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">Gather feedback responses from multiple departments to perform K-Means pattern classification.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- QR Code Generator Card -->
+        <div class="qr-card">
+            <h3><i class="fas fa-qrcode"></i> Office QR Code Generator</h3>
+            <p class="qr-subtitle">Select an office to generate its unique feedback form QR code. When scanned, it redirects to the form with that office pre-selected.</p>
+            <div class="qr-layout">
+                <div class="qr-form-side">
+                    <div class="qr-select-wrap">
+                        <label for="qrOfficeSelect">Select Office / Department</label>
+                        <select id="qrOfficeSelect" class="qr-select"><option value="" disabled selected>Pumili ng tanggapan...</option></select>
+                    </div>
+                    <div id="qrDetails" class="qr-details-box">
+                        <div class="qr-url-label">TARGET URL:</div>
+                        <div id="qrUrlText" class="qr-url-text">http://...</div>
+                    </div>
+                    <button id="downloadQRBtn" class="btn-submit" style="width:100%; justify-content:center; display:none; padding:0.85rem;"><i class="fas fa-download"></i> Download QR Code Image</button>
+                </div>
+                <div id="qrDisplaySide" class="qr-display-side">
+                    <div id="qrCodeContainer" class="qr-placeholder">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Select an office to generate QR code</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Table -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3><i class="fas fa-table"></i> Feedback Responses (<%= feedbacks.length %>)</h3>
+            </div>
+            <% if (feedbacks.length > 0) { %>
+            <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Pangalan</th>
+                        <th>Tanggapan</th>
+                        <th>Kasarian</th>
+                        <th>Edad</th>
+                        <th>Avg SQD</th>
+                        <th>Sentiment</th>
+                        <th>Suhestiyon</th>
+                        <th>Petsa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% feedbacks.forEach(function(fb, index) { %>
+                    <tr class="feedback-row" 
+                        data-index="<%= index %>"
+                        style="cursor: pointer;"
+                        title="Click to view full review detail"
+                    >
+                        <td><%= index + 1 %></td>
+                        <td style="font-weight: 500;"><%= fb.pangalan || 'N/A' %></td>
+                        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= fb.tanggapan || '' %>"><%= fb.tanggapan || 'N/A' %></td>
+                        <td><%= fb.kasarian || 'N/A' %></td>
+                        <td><%= fb.edad || 'N/A' %></td>
+                        <td style="font-weight: 700; color: var(--psau-green);"><%= fb.avgSQD || 'N/A' %></td>
+                        <td>
+                            <% if (fb.sentiment === 'Positive') { %>
+                                <span class="badge positive">Positive</span>
+                            <% } else if (fb.sentiment === 'Negative') { %>
+                                <span class="badge negative">Negative</span>
+                            <% } else if (fb.sentiment === 'Mixed') { %>
+                                <span class="badge mixed">Mixed</span>
+                            <% } else { %>
+                                <span class="badge neutral">Neutral</span>
+                            <% } %>
+                        </td>
+                        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= fb.suggestions || '' %>"><%= fb.suggestions || '—' %></td>
+                        <td style="white-space:nowrap;"><%= fb.petsa || fb.submittedAt || 'N/A' %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            </div>
+            <% } else { %>
+            <p class="table-empty">Wala pang naisumiteng feedback<%= selectedOffice !== 'all' ? ' para sa tanggapang ito' : '' %>.</p>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Details Modal -->
+<div id="feedbackModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-header">
+            <h2><i class="fas fa-id-card" style="color: var(--psau-green);"></i> Detailed Feedback Review</h2>
+        </div>
+        
+        <div class="modal-grid">
+            <div>
+                <h4 class="modal-section-title"><i class="fas fa-user"></i> Respondent Demographics</h4>
+                <div class="modal-detail-item"><strong>Name:</strong> <span id="m-pangalan">N/A</span></div>
+                <div class="modal-detail-item"><strong>Client Type:</strong> <span id="m-uri-kliyente">N/A</span></div>
+                <div class="modal-detail-item"><strong>Age Group:</strong> <span id="m-edad">N/A</span></div>
+                <div class="modal-detail-item"><strong>Gender:</strong> <span id="m-kasarian">N/A</span></div>
+                <div class="modal-detail-item"><strong>Region:</strong> <span id="m-rehiyon">N/A</span></div>
+                <div class="modal-detail-item"><strong>Phone Number:</strong> <span id="m-telepono">N/A</span></div>
+                <div class="modal-detail-item"><strong>Email Address:</strong> <span id="m-email">N/A</span></div>
+            </div>
+            <div>
+                <h4 class="modal-section-title"><i class="fas fa-info-circle"></i> Service Details</h4>
+                <div class="modal-detail-item"><strong>Office Visited:</strong> <span id="m-tanggapan">N/A</span></div>
+                <div class="modal-detail-item"><strong>Date Submitted:</strong> <span id="m-petsa">N/A</span></div>
+                <div class="modal-detail-item"><strong>Service / Transaction:</strong> <span id="m-uri-transaksyon">N/A</span></div>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+            <h4 class="modal-section-title" style="margin-bottom:0; border:none; padding:0;"><i class="fas fa-star-half-alt"></i> SQD Ratings (Scale of 1 to 5)</h4>
+            <span id="m-avgsqd" class="badge positive" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;">0.00/5.00</span>
+        </div>
+        <div class="modal-sqd-grid">
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD0 (Overall)</span>
+                <span class="sqd-score"><span id="m-sqd0">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD1 (Time)</span>
+                <span class="sqd-score"><span id="m-sqd1">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD2 (Documents)</span>
+                <span class="sqd-score"><span id="m-sqd2">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD3 (Steps)</span>
+                <span class="sqd-score"><span id="m-sqd3">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD4 (Access)</span>
+                <span class="sqd-score"><span id="m-sqd4">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD5 (Fees)</span>
+                <span class="sqd-score"><span id="m-sqd5">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD6 (Equality)</span>
+                <span class="sqd-score"><span id="m-sqd6">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD7 (Courtesy)</span>
+                <span class="sqd-score"><span id="m-sqd7">0</span><span>/5</span></span>
+            </div>
+            <div class="modal-sqd-badge">
+                <span class="sqd-code">SQD8 (Outcome)</span>
+                <span class="sqd-score"><span id="m-sqd8">0</span><span>/5</span></span>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+            <h4 class="modal-section-title" style="margin-bottom:0; border:none; padding:0; display:flex; align-items:center; gap:0.4rem;"><i class="fas fa-comment-alt"></i> Client Suggestion & Feedback</h4>
+            <span id="m-sentiment" class="badge">N/A</span>
+        </div>
+        <div class="modal-comment-box">
+            <span id="m-suggestions">Walang nakasulat na suhestiyon.</span>
+            <i class="fas fa-quote-right quote-icon"></i>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    // ========== QR CODE GENERATOR ==========
+    const offices = [
+        { category: "President Cluster", items: [
+            {name:"Office of the President",code:"OPR"},{name:"Internal Audit Unit",code:"IAU"},{name:"Legal Unit",code:"LEU"},
+            {name:"Security Unit",code:"SEU"},{name:"Office of the Board Secretary",code:"OBS"},{name:"Office of Gender and Development",code:"OGD"},
+            {name:"Office of Institutional Quality Assurance",code:"OQA"},{name:"Government-Initiated Accreditation and International Assessments Unit",code:"GIU"},
+            {name:"Institutional and Program Accreditation Unit",code:"IPU"},{name:"Monitoring and Quality Analytics Unit",code:"MQU"},
+            {name:"Quality Management System Unit",code:"QMS"},{name:"Office of Public Affairs and International Linkages",code:"OPI"},
+            {name:"External Affairs Unit",code:"EAU"},{name:"Information Unit",code:"IFU"},{name:"International Affairs Unit",code:"INU"},
+            {name:"Strategic Communication Unit",code:"SCU"},{name:"Bids and Awards Committee",code:"BAC"}
+        ]},
+        { category: "Academic Affairs Cluster", items: [
+            {name:"Office of the Vice President for Academic Affairs",code:"VAA"},{name:"College of Agriculture Systems and Technology",code:"CAT"},
+            {name:"Department of Animal Science",code:"DAS"},{name:"Department of Crop Science",code:"DCR"},
+            {name:"Department of Fisheries",code:"DOF"},{name:"Department of Food Technology",code:"DFT"},
+            {name:"College of Forestry and Agroforestry",code:"CFA"},{name:"Department of Agroforestry",code:"DAF"},
+            {name:"Department of Forestry",code:"DFR"},{name:"College of Arts and Sciences",code:"CAS"},
+            {name:"Department of Biology",code:"DOB"},{name:"Department of Development Communication",code:"DDC"},
+            {name:"Department of English",code:"DOE"},{name:"Department of Mathematics",code:"DOM"},
+            {name:"Department of Social Sciences",code:"DSS"},{name:"College of Education",code:"COE"},
+            {name:"Department of Elementary Education",code:"DEE"},{name:"Department of Physical Education",code:"DPE"},
+            {name:"Department of Professional and General Education",code:"DPG"},{name:"Department of Secondary Education",code:"DSE"},
+            {name:"Department of Technology and Livelihood Education",code:"DTL"},{name:"College of Engineering and Computer Studies",code:"CEC"},
+            {name:"Department of Agricultural and Biosystems Engineering",code:"DAB"},{name:"Department of Civil Engineering",code:"DCI"},
+            {name:"Department of Computer Engineering",code:"DCP"},{name:"Department of Computer Studies",code:"DCS"},
+            {name:"Department of Geodetic Engineering",code:"DGE"},{name:"College of Business, Economics and Entrepreneurship",code:"CBE"},
+            {name:"Department of Agricultural Business",code:"DAG"},{name:"Department of Agricultural Economics",code:"DAE"},
+            {name:"Department of Entrepreneurship",code:"DEN"},{name:"Department of Hospitality Management",code:"DHM"},
+            {name:"College of Veterinary Medicine",code:"CVM"},{name:"Department of Veterinary Basic Sciences",code:"DVB"},
+            {name:"Graduate School",code:"GRS"},{name:"Office of Admissions and Registration",code:"OAR"},
+            {name:"Registration Unit",code:"RGU"},{name:"Office of Alumni Relations and Placement",code:"OAP"},
+            {name:"Office of Cultural and Performing Arts",code:"OCP"},{name:"Office of Guidance and Testing",code:"OGT"},
+            {name:"Office of Library Services and Museum",code:"OLM"},{name:"Office of Sports Development",code:"OSD"},
+            {name:"Office of Student Affairs and Services",code:"OSS"},{name:"National Service Training Program Unit",code:"NSU"},
+            {name:"Special Academic Programs and Services Unit",code:"SAU"}
+        ]},
+        { category: "Administration and Finance Cluster", items: [
+            {name:"Office of the Vice President for Administration and Finance",code:"VAF"},{name:"Office of Administrative Services",code:"OAS"},
+            {name:"Cash Unit",code:"CSU"},{name:"Human Resource Management Unit",code:"HRU"},{name:"Procurement Unit",code:"PRU"},
+            {name:"Records Unit",code:"RCU"},{name:"Supply and Property Management Unit",code:"SPU"},
+            {name:"Office of Financial Services",code:"OFS"},{name:"Accounting Unit",code:"ACU"},{name:"Budget Unit",code:"BDU"},
+            {name:"Office of General and Auxiliary Services",code:"OGA"},{name:"Faculty, Staff and Student Housing Unit",code:"FSU"},
+            {name:"Ground and Physical Plant Improvement Unit",code:"GPU"},{name:"Health Unit",code:"HEU"},
+            {name:"Motorpool and Agri-Machinery Unit",code:"MAU"}
+        ]},
+        { category: "Research, Innovation, Extension and Training Cluster", items: [
+            {name:"Office of the Vice President for Research, Innovation, Extension and Training",code:"VRE"},
+            {name:"Office of Extension and Training",code:"OET"},{name:"Community Radio Station",code:"CRS"},
+            {name:"Satellite Cattle Breeding Center",code:"SCC"},{name:"Technical Vocational Education and Training Center",code:"TVC"},
+            {name:"Office of Innovation",code:"OOI"},{name:"Intellectual Property and Technology Business Management Unit",code:"ITU"},
+            {name:"Technology Business Incubation Unit",code:"TBU"},{name:"Office of Research and Development",code:"ORD"},
+            {name:"Alternative Low-Input Agricultural System RDE Center",code:"ARC"},{name:"Bamboo & Rattan RDE Center",code:"BRC"},
+            {name:"Tamarind RDE Center",code:"TRC"}
+        ]},
+        { category: "Planning and Resource Generation Cluster", items: [
+            {name:"Office of the Vice President for Planning and Resource Generation",code:"VPR"},
+            {name:"Office of Business Affairs",code:"OBA"},{name:"Agribusiness Unit",code:"ABU"},
+            {name:"Non-Agribusiness Unit",code:"NAU"},{name:"Marketing Unit",code:"MRU"},
+            {name:"Office of Planning, Project Development and Monitoring",code:"OPP"},
+            {name:"Disaster Risk Reduction and Management Unit",code:"DRU"},{name:"Land and Agroecological Resource Management Unit",code:"LAU"},
+            {name:"Management Information System Unit",code:"MIU"},{name:"Planning Unit",code:"PLU"},
+            {name:"Project Development, Management and Monitoring Unit",code:"PMU"}
+        ]}
+    ];
+
+    const qrSelect = document.getElementById('qrOfficeSelect');
+    offices.forEach(g => {
+        const og = document.createElement('optgroup');
+        og.label = g.category;
+        g.items.forEach(i => { const o = document.createElement('option'); o.value = i.code; o.textContent = `${i.name} (${i.code})`; og.appendChild(o); });
+        qrSelect.appendChild(og);
+    });
+
+    const qrContainer = document.getElementById('qrCodeContainer');
+    const qrDisplaySide = document.getElementById('qrDisplaySide');
+    const downloadBtn = document.getElementById('downloadQRBtn');
+
+    qrSelect.addEventListener('change', function() {
+        const code = this.value;
+        const targetUrl = `${window.location.origin}/?office=${code}`;
+        qrContainer.innerHTML = '';
+        document.getElementById('qrUrlText').textContent = targetUrl;
+        document.getElementById('qrDetails').style.display = 'block';
+        downloadBtn.style.display = 'inline-flex';
+        qrDisplaySide.classList.add('has-qr');
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer, { text: targetUrl, width: 200, height: 200, colorDark: "#1B5E20", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+        } else {
+            const img = document.createElement('img');
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(targetUrl)}&color=1B5E20`;
+            img.style.cssText = 'width:200px;height:200px;';
+            qrContainer.appendChild(img);
+        }
+    });
+
+    downloadBtn.addEventListener('click', function() {
+        const name = `PSAU_QR_${qrSelect.options[qrSelect.selectedIndex].textContent.replace(/\s+/g,'_').replace(/[()]/g,'')}.png`;
+        const canvas = qrContainer.querySelector('canvas');
+        if (canvas) { const a = document.createElement('a'); a.download = name; a.href = canvas.toDataURL("image/png"); a.click(); }
+    });
+
+    // ========== FILTER & REPORT FUNCTIONS ==========
+    function applyFilters() {
+        const params = new URLSearchParams();
+        const office = document.getElementById('officeFilter').value;
+        if (office !== 'all') params.set('office', office);
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        if (dateFrom) params.set('dateFrom', dateFrom);
+        if (dateTo) params.set('dateTo', dateTo);
+        window.location.href = '/admin/dashboard?' + params.toString();
+    }
+
+    function generateReport() {
+        const params = new URLSearchParams();
+        const office = document.getElementById('officeFilter').value;
+        if (office !== 'all') params.set('office', office);
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        if (dateFrom) params.set('dateFrom', dateFrom);
+        if (dateTo) params.set('dateTo', dateTo);
+        window.open('/admin/report?' + params.toString(), '_blank');
+    }
+
+    // Allow Enter key on date inputs to trigger filter
+    document.querySelectorAll('.filter-date').forEach(el => {
+        el.addEventListener('keydown', e => { if (e.key === 'Enter') applyFilters(); });
+    });
+
+    // ========== CHARTS ==========
+    const sqdAverages = <%- JSON.stringify(chartData.sqdAverages) %>;
+    const sentimentCounts = <%- JSON.stringify(chartData.sentimentCounts) %>;
+    const ccCounts = <%- JSON.stringify(chartData.ccCounts) %>;
+    const genderCounts = <%- JSON.stringify(chartData.genderCounts) %>;
+
+    Chart.defaults.color = '#9ea4b8';
+    Chart.defaults.borderColor = 'rgba(42, 47, 66, 0.5)';
+    Chart.defaults.font.family = 'Inter';
+
+    new Chart(document.getElementById('sqdChart'), {
+        type: 'bar',
+        data: {
+            labels: ['SQD0','SQD1','SQD2','SQD3','SQD4','SQD5','SQD6','SQD7','SQD8'],
+            datasets: [{ label: 'Average Rating', data: sqdAverages,
+                backgroundColor: ['rgba(92,107,192,0.7)','rgba(126,87,194,0.7)','rgba(38,166,154,0.7)','rgba(102,187,106,0.7)','rgba(255,167,38,0.7)','rgba(236,64,122,0.7)','rgba(66,165,245,0.7)','rgba(171,71,188,0.7)','rgba(255,112,67,0.7)'],
+                borderRadius: 8, borderSkipped: false }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true, max: 5, grid: { color: 'rgba(42,47,66,0.3)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('sentimentChart'), {
+        type: 'doughnut',
+        data: { labels: ['Positive','Neutral','Negative','Mixed'], datasets: [{ data: [sentimentCounts.positive, sentimentCounts.neutral, sentimentCounts.negative, sentimentCounts.mixed], backgroundColor: ['rgba(102,187,106,0.8)','rgba(158,164,184,0.8)','rgba(239,83,80,0.8)','rgba(255,167,38,0.8)'], borderWidth: 0, hoverOffset: 10 }] },
+        options: { responsive: true, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { padding: 16 } } } }
+    });
+
+    new Chart(document.getElementById('ccChart'), {
+        type: 'doughnut',
+        data: { labels: ['1. Alam + Nakita','2. Alam pero hindi nakita','3. Nalaman nang makita','4. Hindi alam'], datasets: [{ data: [ccCounts.cc1_1, ccCounts.cc1_2, ccCounts.cc1_3, ccCounts.cc1_4], backgroundColor: ['rgba(102,187,106,0.8)','rgba(92,107,192,0.8)','rgba(255,167,38,0.8)','rgba(239,83,80,0.8)'], borderWidth: 0, hoverOffset: 10 }] },
+        options: { responsive: true, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } } } }
+    });
+
+    new Chart(document.getElementById('genderChart'), {
+        type: 'doughnut',
+        data: { labels: ['Lalaki','Babae'], datasets: [{ data: [genderCounts.lalaki, genderCounts.babae], backgroundColor: ['rgba(92,107,192,0.8)','rgba(236,64,122,0.8)'], borderWidth: 0, hoverOffset: 10 }] },
+        options: { responsive: true, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { padding: 16 } } } }
+    });
+
+    // ========== DETAILED VIEW MODAL LOGIC ==========
+    const modal = document.getElementById('feedbackModal');
+    const closeBtn = document.querySelector('.close-modal');
+    const feedbacksData = <%- JSON.stringify(feedbacks) %>;
+
+    document.querySelectorAll('.feedback-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            const fb = feedbacksData[idx];
+            if (!fb) return;
+
+            // Populate demographics
+            document.getElementById('m-pangalan').textContent = fb.pangalan || 'N/A';
+            document.getElementById('m-uri-kliyente').textContent = fb.uri_kliyente || 'N/A';
+            document.getElementById('m-edad').textContent = fb.edad || 'N/A';
+            document.getElementById('m-kasarian').textContent = fb.kasarian || 'N/A';
+            document.getElementById('m-rehiyon').textContent = fb.rehiyon || 'N/A';
+            document.getElementById('m-telepono').textContent = fb.telepono || 'N/A';
+            document.getElementById('m-email').textContent = fb.email || 'N/A';
+
+            // Populate service details
+            document.getElementById('m-tanggapan').textContent = fb.tanggapan || 'N/A';
+            
+            let petsaText = 'N/A';
+            if (fb.petsa) {
+                petsaText = fb.petsa;
+            } else if (fb.submittedAt) {
+                try {
+                    petsaText = new Date(fb.submittedAt).toISOString().split('T')[0];
+                } catch (e) {}
+            }
+            document.getElementById('m-petsa').textContent = petsaText;
+            document.getElementById('m-uri-transaksyon').textContent = fb.uri_transaksyon || 'N/A';
+
+            // Populate rating & comments
+            document.getElementById('m-avgsqd').textContent = (fb.avgSQD || '0.00') + '/5.00';
+            document.getElementById('m-suggestions').textContent = fb.suggestions || 'Walang nakasulat na suhestiyon.';
+
+            const sentiment = fb.sentiment || 'Neutral';
+            const badgeEl = document.getElementById('m-sentiment');
+            badgeEl.className = 'badge ' + sentiment.toLowerCase();
+            badgeEl.textContent = sentiment;
+
+            for (let i = 0; i <= 8; i++) {
+                document.getElementById(`m-sqd${i}`).textContent = fb[`sqd${i}`] || '0';
+            }
+
+            modal.style.display = 'block';
+        });
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // ========== MANUAL AI REPORT GENERATION ==========
+    function printAIReport() {
+        const params = new URLSearchParams();
+        const office = document.getElementById('officeFilter').value;
+        if (office !== 'all') params.set('office', office);
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        if (dateFrom) params.set('dateFrom', dateFrom);
+        if (dateTo) params.set('dateTo', dateTo);
+        window.open('/admin/print-ai-report?' + params.toString(), '_blank');
+    }
+
+    async function triggerAIAnalysis(forceRefresh) {
+        const container = document.getElementById('aiAnalysisContainer');
+        const refreshBtn = document.getElementById('btnRefreshAI');
+        const printBtn = document.getElementById('btnPrintAI');
+        
+        // Show loading state in container
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3.5rem 1rem;">
+                <div class="spinner" style="margin: 0 auto 1.25rem auto;"></div>
+                <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 700;">Analyzing Feedback Data...</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 350px; margin: 0 auto; line-height: 1.5;">
+                    Pollinations AI (GPT-4o) is parsing client responses, calculating performance highlights, and drafting recommendations. This may take a few seconds.
+                </p>
+            </div>
+        `;
+
+        if (refreshBtn) refreshBtn.style.display = 'none';
+        if (printBtn) printBtn.style.display = 'none';
+
+        try {
+            const office = document.getElementById('officeFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+
+            const params = new URLSearchParams({ office, dateFrom, dateTo });
+            if (forceRefresh) {
+                params.append('refresh', 'true');
+            }
+
+            const response = await fetch('/admin/generate-ai-report?' + params.toString());
+            const result = await response.json();
+
+            if (result.success) {
+                container.innerHTML = `<div class="ai-analysis-content">${result.aiAnalysis}</div>`;
+                if (refreshBtn) refreshBtn.style.display = 'flex';
+                if (printBtn) printBtn.style.display = 'flex';
+            } else {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2.5rem 1rem; border: 1px dashed rgba(244,67,54,0.3); border-radius: 8px; background: rgba(244,67,54,0.02);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; color: #f44336; margin-bottom: 1rem;"></i>
+                        <h4 style="color: #f44336; margin-bottom: 0.5rem; font-weight: 700;">Failed to Generate Report</h4>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 450px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                            ${result.error || 'Unknown error occurred.'}
+                        </p>
+                        <button class="btn-submit" onclick="triggerAIAnalysis(${forceRefresh})" style="margin: 0 auto; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: #f44336; border: none; color: white; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.error('AJAX AI Generation error:', err);
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2.5rem 1rem; border: 1px dashed rgba(244,67,54,0.3); border-radius: 8px; background: rgba(244,67,54,0.02);">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; color: #f44336; margin-bottom: 1rem;"></i>
+                    <h4 style="color: #f44336; margin-bottom: 0.5rem; font-weight: 700;">Network Error</h4>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 450px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                        Could not connect to the server. Please check your connection and try again.
+                    </p>
+                    <button class="btn-submit" onclick="triggerAIAnalysis(${forceRefresh})" style="margin: 0 auto; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: #f44336; border: none; color: white; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                </div>
+            `;
+        }
+    }
+</script>
+
+<%- include('partials/footer') %>

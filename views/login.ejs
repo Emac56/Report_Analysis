@@ -1,0 +1,62 @@
+<%- include('partials/header', { pageTitle: 'Admin Login - PSAU Feedback' }) %>
+
+<div class="login-page">
+    <div class="login-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+    <div class="login-card">
+        <div class="login-header">
+            <div class="lock-icon">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <h1>Welcome Back</h1>
+            <p>Sign in to PSAU Feedback Dashboard</p>
+        </div>
+        <div class="login-body">
+            <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error-msg"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+            <% } %>
+            <form action="/admin/login" method="POST">
+                <div class="input-group">
+                    <div class="input-icon"><i class="fas fa-envelope"></i></div>
+                    <input type="email" id="email" name="email" placeholder=" " required>
+                    <label for="email">Email</label>
+                </div>
+                <div class="input-group">
+                    <div class="input-icon"><i class="fas fa-lock"></i></div>
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <label for="password">Password</label>
+                    <button type="button" class="toggle-pw" onclick="togglePassword()" tabindex="-1" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye" id="pwIcon"></i>
+                    </button>
+                </div>
+                <button type="submit" class="btn-login">
+                    <span>Sign In</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+        <div class="login-footer">
+            <p>&copy; 2026 PSAU — Quality Management System</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const pw = document.getElementById('password');
+    const icon = document.getElementById('pwIcon');
+    if (pw.type === 'password') {
+        pw.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        pw.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+</script>
+
+<%- include('partials/footer') %>

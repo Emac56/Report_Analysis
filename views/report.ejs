@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Report - PSAU</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: #1e2233;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .report-container { max-width: 1100px; margin: 0 auto; }
+        .report-header {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 3px solid #1B5E20;
+            margin-bottom: 2rem;
+        }
+        .report-header h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1B5E20;
+            margin-bottom: 0.25rem;
+        }
+        .report-header .subtitle {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        .report-header .meta {
+            margin-top: 0.75rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: #718096;
+        }
+        .report-header .meta span { display: inline-flex; align-items: center; gap: 0.35rem; }
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .report-summary .stat {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .report-summary .stat .value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1B5E20;
+        }
+        .report-summary .stat .label {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-top: 0.25rem;
+        }
+        .report-section {
+            margin-bottom: 2rem;
+        }
+        .report-section h2 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1B5E20;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .report-table th {
+            background: #f0f4f0;
+            padding: 0.6rem 0.7rem;
+            text-align: left;
+            font-weight: 700;
+            color: #1e2233;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .report-table td {
+            padding: 0.55rem 0.7rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e2233;
+        }
+        .report-table tbody tr:nth-child(even) td { background: #fafbfc; }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.55rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge.positive { background: rgba(102,187,106,0.15); color: #2e7d32; }
+        .badge.negative { background: rgba(239,83,80,0.15); color: #c62828; }
+        .badge.neutral { background: rgba(158,164,184,0.2); color: #718096; }
+        .badge.mixed { background: rgba(255,167,38,0.15); color: #e65100; }
+        .sqd-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+        .sqd-grid .sqd-item {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        .sqd-grid .sqd-item .sqd-label {
+            font-size: 0.7rem;
+            color: #718096;
+            font-weight: 600;
+        }
+        .sqd-grid .sqd-item .sqd-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #1B5E20;
+            margin-top: 0.2rem;
+        }
+        .report-footer {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+            font-size: 0.75rem;
+        }
+        .print-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.5rem;
+            background: #1B5E20;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+        .print-btn:hover { background: #2E7D32; }
+        @media print {
+            @page {
+                margin: 0;
+            }
+            body {
+                margin: 1.6cm;
+                padding: 0;
+            }
+            .print-btn { display: none; }
+            .report-summary .stat { break-inside: avoid; }
+        }
+        @media (max-width: 768px) {
+            .report-summary { grid-template-columns: repeat(2, 1fr); }
+            .sqd-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1>PSAU Customer Feedback Report</h1>
+            <p class="subtitle">Pampanga State Agricultural University — Quality Management System</p>
+            <div class="meta">
+                <span><i class="fas fa-building"></i> <%= selectedOffice !== 'all' ? selectedOffice : 'All Offices / Departments' %></span>
+                <% if (dateFrom) { %><span><i class="fas fa-calendar-start"></i> From: <%= dateFrom %></span><% } %>
+                <% if (dateTo) { %><span><i class="fas fa-calendar-end"></i> To: <%= dateTo %></span><% } %>
+                <span><i class="fas fa-clock"></i> Generated: <%= generatedAt %></span>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <div class="stat">
+                <div class="value"><%= stats.totalResponses %></div>
+                <div class="label">Total Responses</div>
+            </div>
+            <div class="stat">
+                <div class="value"><%= stats.avgSQD %></div>
+                <div class="label">Average SQD Rating</div>
+            </div>
+            <div class="stat">
+                <div class="value"><%= stats.positivePct %>%</div>
+                <div class="label">Positive Sentiment</div>
+            </div>
+            <div class="stat">
+                <div class="value"><%= stats.totalSuggestions %></div>
+                <div class="label">Suggestions Received</div>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h2><i class="fas fa-chart-bar"></i> Service Quality Dimension (SQD) Ratings</h2>
+            <div class="sqd-grid">
+                <% const sqdLabels = ['SQD0 - Overall Satisfaction','SQD1 - Processing Time','SQD2 - Document Compliance','SQD3 - Simplicity of Steps','SQD4 - Information Access','SQD5 - Fees Reasonableness','SQD6 - Fair Treatment','SQD7 - Staff Courtesy','SQD8 - Service Outcome']; %>
+                <% chartData.sqdAverages.forEach(function(val, i) { %>
+                <div class="sqd-item">
+                    <div class="sqd-label"><%= sqdLabels[i] %></div>
+                    <div class="sqd-value"><%= val.toFixed(2) %></div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <div class="report-section">
+            <h2><i class="fas fa-table"></i> Detailed Feedback Responses (<%= feedbacks.length %>)</h2>
+            <% if (feedbacks.length > 0) { %>
+            <div style="overflow-x:auto;">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Pangalan</th>
+                        <th>Tanggapan</th>
+                        <th>Kasarian</th>
+                        <th>Edad</th>
+                        <th>Avg SQD</th>
+                        <th>Sentiment</th>
+                        <th>Suhestiyon</th>
+                        <th>Petsa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% feedbacks.forEach(function(fb, index) { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= fb.pangalan || 'N/A' %></td>
+                        <td><%= fb.tanggapan || 'N/A' %></td>
+                        <td><%= fb.kasarian || 'N/A' %></td>
+                        <td><%= fb.edad || 'N/A' %></td>
+                        <td><%= fb.avgSQD || 'N/A' %></td>
+                        <td>
+                            <% if (fb.sentiment === 'Positive') { %><span class="badge positive">Positive</span>
+                            <% } else if (fb.sentiment === 'Negative') { %><span class="badge negative">Negative</span>
+                            <% } else if (fb.sentiment === 'Mixed') { %><span class="badge mixed">Mixed</span>
+                            <% } else { %><span class="badge neutral">Neutral</span>
+                            <% } %>
+                        </td>
+                        <td><%= fb.suggestions || '—' %></td>
+                        <td><%= fb.petsa || 'N/A' %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            </div>
+            <% } else { %>
+            <p style="color:#718096;text-align:center;padding:2rem;font-size:0.9rem;">No feedback data found for the selected filters.</p>
+            <% } %>
+        </div>
+
+        <div style="text-align:center;">
+            <button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print / Save as PDF</button>
+            <button class="print-btn" style="background:#4a5568;margin-left:0.75rem;" onclick="window.close()"><i class="fas fa-times"></i> Close</button>
+        </div>
+
+        <div class="report-footer">
+            <p>Pampanga State Agricultural University — Quality Management System &copy; <%= new Date().getFullYear() %></p>
+            <p style="margin-top:0.25rem;">This report was generated automatically from the PSAU Customer Feedback System.</p>
+        </div>
+    </div>
+</body>
+</html>
