@@ -179,14 +179,21 @@
             </span>
         </div>
 
-        <% if ((typeof selectedOffice !== 'undefined' && selectedOffice !== 'all') || (typeof dateFrom !== 'undefined' && dateFrom) || (typeof dateTo !== 'undefined' && dateTo)) { %>
+        <% 
+    
+        const safeSelectedOffice = typeof selectedOffice !== 'undefined' ? selectedOffice : 'all';
+        const safeDateFrom = typeof dateFrom !== 'undefined' ? dateFrom : '';
+        const safeDateTo = typeof dateTo !== 'undefined' ? dateTo : '';
+        %>
+
+        <% if (safeSelectedOffice !== 'all' || safeDateFrom || safeDateTo) { %>
         <div class="active-filter-banner">
             <i class="fas fa-filter-circle-xmark banner-icon" style="font-size:1rem;"></i>
             <div>
-                <% if (selectedOffice !== 'all') { %><span class="banner-info"><%= selectedOffice %></span><% } %>
-                <% if (dateFrom) { %><span class="banner-sub">From: <%= dateFrom %></span><% } %>
-                <% if (dateTo) { %><span class="banner-sub">To: <%= dateTo %></span><% } %>
-                <% if (selectedOffice === 'all' && !dateFrom && !dateTo) { %>
+                <% if (safeSelectedOffice !== 'all') { %><span class="banner-info"><%= safeSelectedOffice %></span><% } %>
+                <% if (safeDateFrom) { %><span class="banner-sub">From: <%= safeDateFrom %></span><% } %>
+                <% if (safeDateTo) { %><span class="banner-sub">To: <%= safeDateTo %></span><% } %>
+                <% if (safeSelectedOffice === 'all' && !safeDateFrom && !safeDateTo) { %>
                 <span class="banner-info">All Offices</span>
                 <% } %>
             </div>
