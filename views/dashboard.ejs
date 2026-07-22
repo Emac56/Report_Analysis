@@ -729,7 +729,7 @@
                 a.href = blobUrl;
                 a.click();
                 
-                URL.revokeObjectURL(blobUrl);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
             } catch (err) {
                 console.warn("Hindi ma-download ang fallback QR gamit ang blob. Gagamit ng direct view fallback:", err);
                 
