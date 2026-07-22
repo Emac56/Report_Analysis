@@ -695,12 +695,40 @@
         }
     });
 
-    downloadBtn.addEventListener('click', function() {
+	downloadBtn.addEventListener('click', async function() {
         const name = `PSAU_QR_${qrSelect.options[qrSelect.selectedIndex].textContent.replace(/\s+/g,'_').replace(/[()]/g,'')}.png`;
         const canvas = qrContainer.querySelector('canvas');
-        if (canvas) { const a = document.createElement('a'); a.download = name; a.href = canvas.toDataURL("image/png"); a.click(); }
-    });
+        const img = qrContainer.querySelector('img');
 
+        if (canvas) {
+
+            const a = document.createElement('a');
+            a.download = name;
+            a.href = canvas.toDataURL("image/png");
+            a.click();
+        } else if (img) {
+
+            try {
+                const response = await fetch(img.src);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.download = name;
+                a.href = blobUrl;
+                a.click();
+                
+                URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+
+                console.error("Hindi ma-download ang fallback QR image gamit ang blob: ", err);
+                const a = document.createElement('a');
+                a.target = '_blank';
+                a.href = img.src;
+                a.click();
+            }
+        }
+    });
     // ========== FILTER & REPORT FUNCTIONS ==========
     function applyFilters() {
         const params = new URLSearchParams();
