@@ -596,7 +596,7 @@
     </div>
 </div>
 
-<div id="feedbacks-data-carrier" data-feedbacks="<%= JSON.stringify(feedbacks) %>" style="display: none;"></div>
+<div id="feedbacks-data-carrier" data-feedbacks="<%= JSON.stringify(feedbacks || []) %>" style="display: none;"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -814,7 +814,15 @@
     const modal = document.getElementById('feedbackModal');
     const closeBtn = document.querySelector('.close-modal');
     const feedbackCarrier = document.getElementById('feedbacks-data-carrier');
-    const feedbacksData = feedbackCarrier ? JSON.parse(feedbackCarrier.getAttribute('data-feedbacks')) : [];
+    let feedbacksData = [];
+    if (feedbackCarrier) {
+        try {
+            feedbacksData = JSON.parse(feedbackCarrier.getAttribute('data-feedbacks') || '[]');
+        } catch (err) {
+            console.error('Failed to parse feedbacks data:', err);
+            feedbacksData = [];
+        }
+    }
 
     document.querySelectorAll('.feedback-row').forEach(row => {
         row.addEventListener('click', function() {
