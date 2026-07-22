@@ -706,10 +706,21 @@
             a.download = name;
             a.href = canvas.toDataURL("image/png");
             a.click();
-        } else if (img) {
+
+	} else if (img) {
 
             try {
                 const response = await fetch(img.src);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Error! Status: ${response.status}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (contentType && !contentType.startsWith('image/')) {
+                    throw new Error(`Hindi angkop na Content-Type: ${contentType}`);
+                }
+
                 const blob = await response.blob();
                 const blobUrl = URL.createObjectURL(blob);
                 
@@ -720,15 +731,18 @@
                 
                 URL.revokeObjectURL(blobUrl);
             } catch (err) {
-
-                console.error("Hindi ma-download ang fallback QR image gamit ang blob: ", err);
+                console.warn("Hindi ma-download ang fallback QR gamit ang blob. Gagamit ng direct view fallback:", err);
+                
                 const a = document.createElement('a');
                 a.target = '_blank';
                 a.href = img.src;
                 a.click();
             }
         }
+
     });
+
+
     // ========== FILTER & REPORT FUNCTIONS ==========
     function applyFilters() {
         const params = new URLSearchParams();
