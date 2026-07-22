@@ -596,6 +596,8 @@
     </div>
 </div>
 
+<div id="feedbacks-data-carrier" data-feedbacks="<%= JSON.stringify(feedbacks) %>" style="display: none;"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     // ========== QR CODE GENERATOR ==========
@@ -769,7 +771,8 @@
     // ========== DETAILED VIEW MODAL LOGIC ==========
     const modal = document.getElementById('feedbackModal');
     const closeBtn = document.querySelector('.close-modal');
-    const feedbacksData = <%- JSON.stringify(feedbacks) %>;
+    const feedbackCarrier = document.getElementById('feedbacks-data-carrier');
+    const feedbacksData = feedbackCarrier ? JSON.parse(feedbackCarrier.getAttribute('data-feedbacks')) : [];
 
     document.querySelectorAll('.feedback-row').forEach(row => {
         row.addEventListener('click', function() {
