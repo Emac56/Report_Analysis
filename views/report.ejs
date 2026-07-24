@@ -190,10 +190,8 @@
             <p class="subtitle">Pampanga State Agricultural University — Quality Management System</p>
             <div class="meta">
                 <span><i class="fas fa-building"></i> <%= selectedOffice !== 'all' ? selectedOffice : 'All Offices / Departments' %></span>
-                
-                <% if (typeof dateFrom !== 'undefined' && dateFrom) { %><span><i class="fas fa-calendar-start"></i> From: <%= dateFrom %></span><% } %>
-                <% if (typeof dateTo !== 'undefined' && dateTo) { %><span><i class="fas fa-calendar-end"></i> To: <%= dateTo %></span><% } %>
-                
+                <% if (dateFrom) { %><span><i class="fas fa-calendar-start"></i> From: <%= dateFrom %></span><% } %>
+                <% if (dateTo) { %><span><i class="fas fa-calendar-end"></i> To: <%= dateTo %></span><% } %>
                 <span><i class="fas fa-clock"></i> Generated: <%= generatedAt %></span>
             </div>
         </div>
